@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+</head>
+<body>
+    <h1>Welcome {{ request.user.username }}</h1>
+<a href="{% url 'logout' %}">Logout</a>
+<h2>Chat Room</h2>
+<div id="chat-log"></div>
+<input id="chat-message-input" type="text" placeholder="Type a message...">
+<button id="chat-message-submit">Send</button>
+
+<script>
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const chatLog = document.getElementById('chat-log');
+        chatLog.innerHTML += '<div>' + data.message + '</div>';
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.getElementById('chat-message-submit').onclick = function(e) {
+        const input = document.getElementById('chat-message-input');
+        chatSocket.send(JSON.stringify({'message': input.value}));
+        input.value = '';
+    };
+</script>
+</body>
+</html>
